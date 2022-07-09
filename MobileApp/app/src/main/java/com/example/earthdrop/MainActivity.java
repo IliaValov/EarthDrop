@@ -1,11 +1,16 @@
 package com.example.earthdrop;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.provider.MediaStore;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -17,6 +22,10 @@ import com.example.earthdrop.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ImageView;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +50,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+            }
+        });
+
+        Button selectImageButton = findViewById(R.id.selectImage);
+        selectImageButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Starting a flow for getting an image from the device
+                Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, 1);
             }
         });
     }
@@ -72,5 +91,26 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK)
+        {
+            Uri chosenImageUri = data.getData();
+
+            Bitmap mBitmap = null;
+            try {
+                // Converting the image in bitmap
+                mBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), chosenImageUri);
+
+                ImageView showImage = (ImageView) findViewById(R.id.showImage);
+                // setting the image in the view layout
+                showImage.setImageBitmap(mBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
